@@ -18,7 +18,7 @@ export default function StockCard({ stock, onSelect }) {
 
   return (
     <>
-      <div className="bg-gray-800 rounded-lg p-4 shadow-lg hover:shadow-xl transition-shadow">
+      <div className="w-full bg-slate-800 rounded-xl p-4 shadow-lg hover:shadow-xl transition-shadow">
         <div className="flex justify-between items-start mb-3">
           <div>
             <h3 className="text-xl font-bold text-white">{stock.company}</h3>

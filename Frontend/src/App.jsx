@@ -105,9 +105,9 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-900">
+    <div className="flex min-h-screen w-full bg-gray-900">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 w-full overflow-auto">
         {renderContent()}
       </div>
     </div>

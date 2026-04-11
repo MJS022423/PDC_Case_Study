@@ -51,6 +51,16 @@ class PortfolioService:
         self._save_balance()
         return {'success': True, 'message': f'Added ${amount:.2f} to balance', 'new_balance': self.balance}
 
+    def subtract_balance(self, amount: float) -> Dict[str, Any]:
+        """Subtract funds from balance"""
+        if amount <= 0:
+            return {'success': False, 'message': 'Amount must be positive'}
+        if amount > self.balance:
+            return {'success': False, 'message': 'Insufficient balance'}
+        self.balance -= amount
+        self._save_balance()
+        return {'success': True, 'message': f'Subtracted ${amount:.2f} from balance', 'new_balance': self.balance}
+
     def buy_stock(self, company: str, quantity: int) -> Dict[str, Any]:
         """Execute buy transaction"""
         if quantity <= 0:

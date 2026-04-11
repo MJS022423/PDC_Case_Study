@@ -123,4 +123,16 @@ export const balanceApi = {
       throw error;
     }
   },
+
+  subtractBalance: async (amount) => {
+    try {
+      const response = await apiClient.post('/balance/subtract', {
+        amount,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error subtracting balance:', error);
+      throw error;
+    }
+  },
 };

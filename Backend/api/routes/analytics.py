@@ -101,9 +101,9 @@ async def get_balance():
         raise HTTPException(status_code=500, detail="Services not initialized")
     return {"balance": portfolio_svc.get_balance()}
 
-@router.post("/balance/add")
-async def add_balance(request: dict):
-    """Add funds to balance"""
+@router.post("/balance/subtract")
+async def subtract_balance(request: dict):
+    """Subtract funds from balance"""
     if not portfolio_svc:
         raise HTTPException(status_code=500, detail="Services not initialized")
 
@@ -111,7 +111,7 @@ async def add_balance(request: dict):
     if amount <= 0:
         raise HTTPException(status_code=400, detail="Amount must be positive")
 
-    result = portfolio_svc.add_balance(amount)
+    result = portfolio_svc.subtract_balance(amount)
     if not result['success']:
         raise HTTPException(status_code=400, detail=result['message'])
 
