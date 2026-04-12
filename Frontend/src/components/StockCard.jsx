@@ -16,7 +16,7 @@ export default function StockCard({ stock, onSelect }) {
     }
   };
 
-  // 🔥 Dynamic styles based on action
+  // 🔥 Action styling
   const getActionStyles = () => {
     switch (stock.action) {
       case 'BUY':
@@ -42,6 +42,40 @@ export default function StockCard({ stock, onSelect }) {
 
   const actionStyle = getActionStyles();
 
+  // 🔥 ACTION BUTTON LOGIC
+  const renderActionButton = () => {
+    if (stock.action === 'BUY') {
+      return (
+        <button
+          onClick={() => onSelect(stock.company, 'buy')}
+          className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg transition-colors"
+        >
+          Buy Now 🚀
+        </button>
+      );
+    }
+
+    if (stock.action === 'SELL') {
+      return (
+        <button
+          onClick={() => onSelect(stock.company, 'sell')}
+          className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg transition-colors"
+        >
+          Sell Now 📉
+        </button>
+      );
+    }
+
+    return (
+      <button
+        onClick={() => onSelect(stock.company)}
+        className="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 rounded-lg transition-colors"
+      >
+        Hold / View
+      </button>
+    );
+  };
+
   return (
     <>
       <div className="w-full bg-slate-800 rounded-xl p-4 shadow-lg hover:shadow-xl transition-shadow">
@@ -58,15 +92,12 @@ export default function StockCard({ stock, onSelect }) {
           </span>
         </div>
 
-        {/* 🔥 SIGNAL BADGES */}
+        {/* SIGNAL */}
         <div className="flex justify-between items-center mb-4">
-
-          {/* Action Badge */}
           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${actionStyle.bg} ${actionStyle.text}`}>
             {actionStyle.label}
           </span>
 
-          {/* Confidence */}
           <span className="text-sm text-white font-medium">
             {stock.confidence?.toFixed(0)}%
           </span>
@@ -81,12 +112,7 @@ export default function StockCard({ stock, onSelect }) {
             View Analysis
           </button>
 
-          <button
-            onClick={() => onSelect(stock.company)}
-            className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg transition-colors"
-          >
-            Trade
-          </button>
+          {renderActionButton()}
         </div>
       </div>
 

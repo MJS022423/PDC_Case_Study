@@ -1,4 +1,4 @@
-"""FAST + FIXED Portfolio Service (REAL-TIME ML INTEGRATED)"""
+"""FAST + SMART Portfolio Service (ML + RISK MANAGEMENT FIXED)"""
 
 from typing import List, Dict, Any
 import logging
@@ -68,7 +68,7 @@ class PortfolioService:
         return {'success': True, 'balance': self.balance}
 
     # ========================
-    # PRICE (SAFE)
+    # PRICE
     # ========================
 
     def _get_price(self, company):
@@ -95,10 +95,6 @@ class PortfolioService:
             return {'success': False, 'message': 'Invalid quantity'}
 
         price = self._get_price(company)
-
-        if price <= 0:
-            return {'success': False, 'message': 'Invalid stock price'}
-
         total = price * quantity
 
         if total > self.balance:
@@ -112,27 +108,17 @@ class PortfolioService:
         return {'success': True, 'transaction': tx}
 
     def sell_stock(self, company, quantity):
-        if quantity <= 0:
-            return {'success': False, 'message': 'Invalid quantity'}
-
         transactions = self.transaction_service.get_transactions()
-        shares = 0
 
+        shares = 0
         for tx in transactions:
             if tx['company'] == company:
-                if tx['type'] == 'buy':
-                    shares += tx['quantity']
-                else:
-                    shares -= tx['quantity']
+                shares += tx['quantity'] if tx['type'] == 'buy' else -tx['quantity']
 
         if shares < quantity:
             return {'success': False, 'message': 'Not enough shares'}
 
         price = self._get_price(company)
-
-        if price <= 0:
-            return {'success': False, 'message': 'Invalid stock price'}
-
         total = price * quantity
 
         tx = self.transaction_service.sell_stock(company, quantity, price)
@@ -143,7 +129,7 @@ class PortfolioService:
         return {'success': True, 'transaction': tx}
 
     # ========================
-    # PORTFOLIO (🔥 FIXED)
+    # PORTFOLIO (🔥 FIXED WITH RISK LOGIC)
     # ========================
 
     def get_portfolio(self):
@@ -177,7 +163,6 @@ class PortfolioService:
             if d['shares'] <= 0:
                 continue
 
-            # 🔥 KEY FIX: use ML + simulation-aware data
             stock_data = self.stock_service.get_single_stock(
                 company,
                 index=self.simulation_index if self.simulation_running else None
@@ -187,6 +172,22 @@ class PortfolioService:
                 continue
 
             price = stock_data["price"]
+            avg_buy_price = d['cost'] / d['shares']
+
+            profit_percent = ((price - avg_buy_price) / avg_buy_price) * 100
+
+            ml_action = stock_data["action"]
+            confidence = stock_data["confidence"]
+
+            # 🔥 SMART DECISION LAYER
+            if profit_percent < -2 and confidence < 75:
+                action = "SELL"  # stop loss
+
+            elif profit_percent > 3:
+                action = "SELL"  # take profit
+
+            else:
+                action = ml_action  # fallback to ML
 
             result.append({
                 'company': company,
@@ -194,9 +195,9 @@ class PortfolioService:
                 'current_price': price,
                 'value': d['shares'] * price,
                 'cost': d['cost'],
-                # 🔥 NEW REAL-TIME FIELDS
-                'confidence': stock_data["confidence"],
-                'action': stock_data["action"]
+                'profit_percent': round(profit_percent, 2),
+                'confidence': confidence,
+                'action': action
             })
 
         return result
