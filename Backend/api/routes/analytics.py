@@ -1,4 +1,4 @@
-"""HIGH-PERFORMANCE stock trading API routes (FIXED SELL ALL + VALIDATION)"""
+"""HIGH-PERFORMANCE stock trading API routes (FIXED SELL ALL + VALIDATION + WORKER CONTROL)"""
 
 from fastapi import APIRouter, HTTPException
 from services.stock_service import StockService
@@ -113,7 +113,6 @@ async def sell_stock(request: dict):
     if not company:
         raise HTTPException(status_code=400, detail="Company required")
 
-    # 🔥 CRITICAL FIX
     try:
         quantity = int(quantity)
     except:
@@ -123,6 +122,39 @@ async def sell_stock(request: dict):
         raise HTTPException(status_code=400, detail="Quantity must be > 0")
 
     return portfolio_svc.sell_stock(company, quantity)
+
+
+# ========================
+# 🔥 NEW: WORKER CONTROL (PDC)
+# ========================
+@router.post("/workers")
+async def set_workers(request: dict):
+    if not stock_svc:
+        raise HTTPException(status_code=500, detail="Stock service not initialized")
+
+    workers = request.get("workers", 8)
+
+    try:
+        workers = int(workers)
+    except:
+        raise HTTPException(status_code=400, detail="Invalid workers value")
+
+    stock_svc.set_workers(workers)
+
+    return {
+        "success": True,
+        "workers": stock_svc.get_workers()
+    }
+
+
+@router.get("/workers")
+async def get_workers():
+    if not stock_svc:
+        raise HTTPException(status_code=500, detail="Stock service not initialized")
+
+    return {
+        "workers": stock_svc.get_workers()
+    }
 
 
 # ========================
