@@ -1,4 +1,4 @@
-"""ML-OPTIMIZED + PARALLEL stock service (PDC ENABLED)"""
+"""ML-OPTIMIZED + FAST PARALLEL stock service (REALTIME SAFE)"""
 
 from typing import List, Dict, Any
 from data_processing.loaders import StockDataLoader
@@ -10,32 +10,51 @@ logger = logging.getLogger(__name__)
 
 
 class StockService:
-    """Ultra-fast stock service with ML + Parallel Processing"""
+    """Ultra-fast stock service with ML + optimized parallel processing"""
 
     def __init__(self, loader: StockDataLoader):
         self.loader = loader
 
-        # Cached data
         self.stocks = self.loader.get_stocks_list()
         self.data = self.loader.stock_data
 
-        # ML Model
+        # 🔥 worker control
+        self.workers = 4
+
+        # 🔥 TRAIN MODEL ONCE (CRITICAL FIX)
         self.model = StockMLModel()
         self._train_model()
 
     # ========================
-    # ML TRAINING (ONCE)
+    # ML TRAINING (ONCE ONLY)
     # ========================
 
     def _train_model(self):
         try:
             self.model.train(self.data)
-            logger.info("✅ ML model trained (optimized)")
+            logger.info("✅ ML model trained ONCE (optimized)")
         except Exception as e:
             logger.error(f"ML training failed: {e}")
 
     # ========================
-    # INTERNAL UTIL
+    # WORKER CONTROL
+    # ========================
+
+    def set_workers(self, workers: int):
+        try:
+            workers = int(workers)
+            if workers <= 0:
+                workers = 1
+            self.workers = workers
+            logger.info(f"⚡ Workers updated → {self.workers}")
+        except Exception as e:
+            logger.error(f"Invalid workers value: {e}")
+
+    def get_workers(self) -> int:
+        return self.workers
+
+    # ========================
+    # INTERNAL
     # ========================
 
     def _get_index(self, index, length):
@@ -44,7 +63,7 @@ class StockService:
         return length - 1
 
     def _process_single_stock(self, stock, index):
-        """🔥 This runs in parallel per stock"""
+        """🔥 FAST worker (NO TRAINING HERE)"""
         try:
             company = stock["company"]
             data = self.data.get(company)
@@ -61,6 +80,7 @@ class StockService:
             start = max(0, idx - 10)
             relevant_prices = prices[start:idx + 1]
 
+            # 🔥 USE PRETRAINED MODEL
             analysis = self.model.predict(relevant_prices)
 
             return {
@@ -76,25 +96,24 @@ class StockService:
             return None
 
     # ========================
-    # CORE API METHODS (PARALLEL)
+    # PARALLEL CORE (FAST)
     # ========================
 
     def get_all_stocks(self, index: int = None) -> List[Dict[str, Any]]:
         """
-        🔥 PARALLEL STOCK PROCESSING (PDC)
+        ⚡ FAST PARALLEL (THREAD-BASED, REALTIME SAFE)
         """
 
-        with ThreadPoolExecutor(max_workers=8) as executor:
+        with ThreadPoolExecutor(max_workers=self.workers) as executor:
             results = list(executor.map(
                 lambda stock: self._process_single_stock(stock, index),
                 self.stocks
             ))
 
-        # Remove None values
         return [r for r in results if r is not None]
 
     # ========================
-    # SINGLE STOCK (UNCHANGED)
+    # SINGLE STOCK
     # ========================
 
     def get_single_stock(self, company: str, index: int = None):
@@ -124,7 +143,7 @@ class StockService:
     # HISTORY
     # ========================
 
-    def get_stock_history(self, company: str, limit: int = 100, index: int = None) -> List[Dict[str, Any]]:
+    def get_stock_history(self, company: str, limit: int = 100, index: int = None):
         data = self.data.get(company)
         if not data:
             return []
@@ -136,10 +155,7 @@ class StockService:
         start = max(0, end - limit)
 
         return [
-            {
-                "index": i,
-                "close": prices[i]
-            }
+            {"index": i, "close": prices[i]}
             for i in range(start, end + 1)
         ]
 

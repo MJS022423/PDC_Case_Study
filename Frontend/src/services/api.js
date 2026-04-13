@@ -108,3 +108,18 @@ export const simulationApi = {
     return response.data;
   },
 };
+
+// ========================
+// 🔥 NEW: PERFORMANCE / WORKERS (PDC)
+// ========================
+export const performanceApi = {
+  setWorkers: async (workers) => {
+    const response = await apiClient.post('/workers', { workers });
+    return response.data;
+  },
+
+  getWorkers: async () => {
+    const response = await apiClient.get('/workers');
+    return response.data;
+  },
+};
